@@ -16,6 +16,8 @@ import scala.collection.JavaConverters._
 
 case class PostFormField(tag: String, value: String)
 case class LinksAndCookies(links: List[String], cookies: Map[String, String])
+case class PushContent(pushTag: String, userId: String, content: String, ipDateTime: String)
+case class PttArticle(articleId: String, metaData: List[(String, String)], content: String, push: List[PushContent])
 
 object Parser {
 
@@ -23,10 +25,11 @@ object Parser {
   val ageCheckPage = "https://www.ptt.cc/ask/over18"
   val ageCheckYes = PostFormField("yes", "yes")
 
-  def accessPage(link: String): Connection.Response = {
+  def accessPageWithCookies(link: String, cookies: Map[String, String]): Connection.Response = {
     val connection = Jsoup.connect(link)
     connection
-      .userAgent(userAgent)
+      .userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1")
+      .cookies(cookies.asJava)
       .execute
   }
 
@@ -59,9 +62,10 @@ object Parser {
 
   def parseTableOfContents(link: String): LinksAndCookies = {
 
+    // Ptt has age check. For the first time we access every page of a board, we access through the
+    // age checking page then save the cookie for the use of following article crawling.
     val tableOfContentsConnection = accessAgeCheck(link)
     val cookies: Map[String, String] = tableOfContentsConnection.cookies().asScala.toMap
-    println(tableOfContentsConnection.cookies)
 
     val articleLinks: List[String] = tableOfContentsConnection.parse.getElementsByClass("r-ent").asScala
       .map(elem => elem.select("a[href]").attr("abs:href"))
@@ -72,26 +76,43 @@ object Parser {
   }
 
   def parseArticle(articleLink: String, cookies: Map[String, String]) = {
-    val connection = Jsoup.connect(articleLink)
+
+    val articleId = articleLink.substring(articleLink.lastIndexOf("/") + 1)
 
     // Main content includes article title, date, author, text and all push messages
-    val mainContent: Element = connection
-      .ignoreContentType(true)
-      .userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1")
-      .cookies(cookies.asJava)
-      .execute
-      .parse
-      .getElementById("main-content")
+    val mainContent: Element = accessPageWithCookies(articleLink, cookies).parse.getElementById("main-content")
 
-    // Extract articl meta data
+    // Extract article meta data
     val metaTags = mainContent.getElementsByClass("article-meta-tag").asScala.map(elem => elem.text)
     val metaValues = mainContent.getElementsByClass("article-meta-value").asScala.map(elem => elem.text)
-    val metaData = metaTags.zip(metaValues)
+    val metaData = metaTags.zip(metaValues).toList
 
+    // Extract push data
+    val pushData: List[PushContent] =
+      mainContent.getElementsByClass("push").asScala.map(elem => parseSinglePushContent(elem)).toList
+
+    // Extract article text
     mainContent.children().remove()
     val cleanedContent = mainContent.text
 
+    println(articleId)
     println(cleanedContent)
+    println(pushData)
     println(metaData)
+  }
+
+  def parseSinglePushContent(push: Element): PushContent = {
+
+    val eliminatePush = ": "
+
+    val pushTag = push.getElementsByClass("push-tag").text
+    val pushId = push.getElementsByClass("push-userid").text
+    val pushIpDateTime = push.getElementsByClass("push-ipdatetime").text
+    val pushContent = push.getElementsByClass("push-content").text
+    val modifiedPushContent =
+      if (pushContent.indexOf(eliminatePush) > -1) pushContent.substring(pushContent.indexOf(eliminatePush) + eliminatePush.size)
+      else pushContent
+
+    PushContent(pushTag, pushId, modifiedPushContent, pushIpDateTime)
   }
 }
