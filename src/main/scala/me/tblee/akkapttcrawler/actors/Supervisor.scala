@@ -1,6 +1,6 @@
 package me.tblee.akkapttcrawler.actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import me.tblee.akkapttcrawler.utils.Messages.{FinishedCrawlingPage, StartCrawling, StartCrawlingPage}
 
 /**
@@ -42,7 +42,13 @@ class Supervisor(system: ActorSystem, board: String) extends Actor with ActorLog
     case FinishedCrawlingPage(_, page) =>
       registerFinishedPage(page)
       if (!pagesToCrawl.isEmpty) assignPageToCrawl(pagesToCrawl.head, sender())
+      else if (pagesCrawling.isEmpty) shutDown()
 
     case _ =>
+  }
+
+  private def shutDown() = {
+    self ! PoisonPill
+    system.terminate
   }
 }

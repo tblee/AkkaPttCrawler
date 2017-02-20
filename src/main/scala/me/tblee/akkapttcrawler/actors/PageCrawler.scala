@@ -19,9 +19,7 @@ class PageCrawler(supervisor: ActorRef) extends Actor with ActorLogging{
     case StartCrawlingPage(board, page, fileWriter) =>
       val link = s"${pttPrefix}${board}/index${page.toString}.html"
       val articles: List[PttArticle] = parser.parsePage(link)
-      //println(articles)
       fileWriter ! StartWriting(articles, board, page)
-      //sender() ! FinishedCrawlingPage(board, page)
 
     case FinishedWriting(board, page) =>
       supervisor ! FinishedCrawlingPage(board, page)
