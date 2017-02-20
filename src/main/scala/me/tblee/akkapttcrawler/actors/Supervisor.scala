@@ -12,15 +12,25 @@ class Supervisor(system: ActorSystem, board: String) extends Actor with ActorLog
 
   var pagesToCrawl: Set[Int] = Set()
   var pagesCrawling: Set[Int] = Set()
-  var pageCrawlers = (1 to numCrawlersBasic) map {id => system.actorOf(Props(new PageCrawler))}
+
+  // Fire up PageCrawler actors
+  var pageCrawlers = (1 to numCrawlersBasic) map {id => system.actorOf(Props(new PageCrawler(self)))}
+
+  // Fire up FileWriter actor
+  val fileWriter = system.actorOf(Props(new FileWriter))
 
   def assignPageToCrawl(page: Int, crawler: ActorRef) = {
     pagesToCrawl -= page
     pagesCrawling += page
-    crawler ! StartCrawlingPage(board, page)
+    crawler ! StartCrawlingPage(board, page, fileWriter)
   }
 
-  def receive: Receive = {
+  def registerFinishedPage(page: Int) = {
+    pagesCrawling -= page
+    log.info(s"Finished crawling page --${page} of board --${board}")
+  }
+
+  override def receive: Receive = {
     // Setup crawling environment and start crawling
     case StartCrawling(from, to) =>
       pagesToCrawl = (from to to).toSet
@@ -30,6 +40,7 @@ class Supervisor(system: ActorSystem, board: String) extends Actor with ActorLog
 
     // When a PageCrawler reports a crawling task is finished
     case FinishedCrawlingPage(_, page) =>
+      registerFinishedPage(page)
       if (!pagesToCrawl.isEmpty) assignPageToCrawl(pagesToCrawl.head, sender())
 
     case _ =>
