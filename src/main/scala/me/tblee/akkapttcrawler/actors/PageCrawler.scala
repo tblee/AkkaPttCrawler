@@ -1,8 +1,10 @@
 package me.tblee.akkapttcrawler.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
-import me.tblee.akkapttcrawler.utils.Messages.{FinishedCrawlingPage, FinishedWriting, StartCrawlingPage, StartWriting}
+import me.tblee.akkapttcrawler.utils.Messages._
 import me.tblee.akkapttcrawler.utils.{Parser, PttArticle}
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by tblee on 2/17/17.
@@ -18,8 +20,15 @@ class PageCrawler(supervisor: ActorRef) extends Actor with ActorLogging{
   override def receive: Receive = {
     case StartCrawlingPage(board, page, fileWriter) =>
       val link = s"${pttPrefix}${board}/index${page.toString}.html"
-      val articles: List[PttArticle] = parser.parsePage(link)
-      fileWriter ! StartWriting(articles, board, page)
+      val maybeArticles: Try[List[PttArticle]] = parser.parsePage(link)
+      maybeArticles match {
+        case Success(articles) =>
+          fileWriter ! StartWriting(articles, board, page)
+        case Failure(err) =>
+          log.error(s"Got ${err.toString} when crawling page --${page} of board --${board}")
+          supervisor ! FailedCrawlingPage(board, page)
+      }
+      //fileWriter ! StartWriting(articles, board, page)
 
     case FinishedWriting(board, page) =>
       supervisor ! FinishedCrawlingPage(board, page)

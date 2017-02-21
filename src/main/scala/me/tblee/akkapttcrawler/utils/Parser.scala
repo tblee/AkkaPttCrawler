@@ -5,6 +5,7 @@ import org.jsoup.nodes.Element
 import org.jsoup.{Connection, Jsoup}
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 /**
   * Created by tblee on 2/17/17.
@@ -20,9 +21,14 @@ object Parser {
 
   val parsePageUtils = ParsePageUtils
 
-  def parsePage(link: String): List[PttArticle] = {
-    val articleLinks: LinksAndCookies = parseTableOfContents(link)
-    articleLinks.links.map{ link => parseArticle(link, articleLinks.cookies) }
+  def parsePage(link: String): Try[List[PttArticle]] = {
+    //val articleLinks: LinksAndCookies = parseTableOfContents(link)
+    //articleLinks.links.map{ link => parseArticle(link, articleLinks.cookies) }
+
+    for {
+      articleLinks <- Try(parseTableOfContents(link))
+      pttArticles <- Try( articleLinks.links.map{ link => parseArticle(link, articleLinks.cookies) } )
+    } yield pttArticles
   }
 
   def parseTableOfContents(link: String): LinksAndCookies = {
