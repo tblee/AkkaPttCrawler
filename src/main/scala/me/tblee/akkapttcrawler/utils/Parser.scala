@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 case class PostFormField(tag: String, value: String)
 case class LinksAndCookies(links: List[String], cookies: Map[String, String])
 case class PushContent(pushTag: String, userId: String, content: String, ipDateTime: String)
-case class PttArticle(articleId: String, metaData: List[(String, String)], content: String, push: List[PushContent])
+case class PttArticle(articleId: String, metaData: Map[String, String], content: String, push: List[PushContent])
 
 object Parser {
 
@@ -50,7 +50,7 @@ object Parser {
     // Extract article meta data
     val metaTags = mainContent.getElementsByClass("article-meta-tag").asScala.map(elem => elem.text)
     val metaValues = mainContent.getElementsByClass("article-meta-value").asScala.map(elem => elem.text)
-    val metaData = metaTags.zip(metaValues).toList
+    val metaData = metaTags.zip(metaValues).toMap
 
     // Extract push data
     val pushData: List[PushContent] =

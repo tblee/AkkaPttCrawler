@@ -8,3 +8,11 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.17",
   "org.jsoup" % "jsoup" % "1.9.2"
 )
+
+val circeVersion = "0.7.0"
+
+libraryDependencies ++= Seq(
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-parser"
+).map(_ % circeVersion)
