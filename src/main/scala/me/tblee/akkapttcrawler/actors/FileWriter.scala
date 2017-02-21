@@ -11,10 +11,10 @@ import me.tblee.akkapttcrawler.utils.Messages.{FinishedWriting, StartWriting}
   * Created by tblee on 2/20/17.
   * File writer that writes the crawled page information to file.
   */
-class FileWriter extends Actor with ActorLogging {
+class FileWriter(file: File) extends Actor with ActorLogging {
 
   // Initialize a file writer
-  val writer = new PrintWriter(new File("test.txt"))
+  val writer = new PrintWriter(file)
   writer.write("[")
   var firstWrite = true
 

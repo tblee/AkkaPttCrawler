@@ -1,5 +1,6 @@
 package me.tblee.akkapttcrawler.actors
 
+import java.io.File
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import me.tblee.akkapttcrawler.utils.Messages.{FinishedCrawlingPage, StartCrawling, StartCrawlingPage}
 
@@ -17,7 +18,7 @@ class Supervisor(system: ActorSystem, board: String) extends Actor with ActorLog
   var pageCrawlers = (1 to numCrawlersBasic) map {id => system.actorOf(Props(new PageCrawler(self)))}
 
   // Fire up FileWriter actor
-  val fileWriter = system.actorOf(Props(new FileWriter))
+  val fileWriter = system.actorOf(Props(new FileWriter(new File(s"${board}_crawled.json"))))
 
   def assignPageToCrawl(page: Int, crawler: ActorRef) = {
     pagesToCrawl -= page
