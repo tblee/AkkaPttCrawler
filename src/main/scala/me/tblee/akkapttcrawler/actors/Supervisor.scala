@@ -44,7 +44,7 @@ class Supervisor(system: ActorSystem, board: String) extends Actor with ActorLog
     case StartCrawling(from, to) =>
       pagesToCrawl = (from to to).toSet
       log.info(s"Start crawling...")
-      // In this first implementation we assume #pages >= #crawlers
+      // This works even when #crawlers > #pages
       val firstBatch = pagesToCrawl.take(numCrawlersBasic) zip pageCrawlers
       firstBatch foreach { case (page, crawler) => assignPageToCrawl(page, crawler) }
 
@@ -60,6 +60,7 @@ class Supervisor(system: ActorSystem, board: String) extends Actor with ActorLog
       err match {
         case error: HttpStatusException =>
           val badURL = error.getUrl
+          log.info(s"The URL --${badURL} of page --${page} of board --${board} is not reachable, add to black list...")
           pageCrawlers foreach {pageCrawler => pageCrawler ! UpdateBlackList(badURL)}
         case _ =>
       }
