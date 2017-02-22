@@ -29,7 +29,6 @@ class PageCrawler(supervisor: ActorRef) extends Actor with ActorLogging{
           log.error(s"Got ${err.toString} when crawling page --${page} of board --${board}")
           supervisor ! FailedCrawlingPage(board, page, err)
       }
-      //fileWriter ! StartWriting(articles, board, page)
 
     case FinishedWriting(board, page) =>
       supervisor ! FinishedCrawlingPage(board, page)

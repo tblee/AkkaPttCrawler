@@ -30,7 +30,6 @@ class FileWriter(file: File) extends Actor with ActorLogging {
             firstWrite = false
           case _ =>
         }
-        //firstWrite = false
       } else {
         articles foreach { article => writer.write("," + article.asJson.spaces4 + "\n") }
       }

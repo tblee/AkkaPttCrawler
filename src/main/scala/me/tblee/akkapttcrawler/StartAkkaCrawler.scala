@@ -1,7 +1,5 @@
 package me.tblee.akkapttcrawler
 
-import java.io.File
-
 import akka.actor.{Actor, ActorSystem, PoisonPill, Props}
 import me.tblee.akkapttcrawler.actors.{PageCrawler, Supervisor}
 import me.tblee.akkapttcrawler.utils.Messages._
@@ -9,7 +7,7 @@ import me.tblee.akkapttcrawler.utils.Messages._
 /**
   * Created by tblee on 2/18/17.
   */
-object AkkaCrawlerTest {
+object StartAkkaCrawler {
   def main(args: Array[String]) {
 
     val system = ActorSystem()

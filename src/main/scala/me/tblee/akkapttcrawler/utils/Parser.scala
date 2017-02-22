@@ -23,8 +23,6 @@ object Parser {
   val parsePageUtils = ParsePageUtils
 
   def parsePage(link: String, blackList: Set[String] = Set[String]()): Try[List[PttArticle]] = {
-    //val articleLinks: LinksAndCookies = parseTableOfContents(link)
-    //articleLinks.links.map{ link => parseArticle(link, articleLinks.cookies) }
 
     for {
       articleLinks <- Try(parseTableOfContents(link, blackList))
@@ -35,9 +33,6 @@ object Parser {
           }.flatten
         }
       }
-
-
-      //pttArticles <- Try( articleLinks.links.map{ link => parseArticle(link, articleLinks.cookies) } )
     } yield pttArticles.getOrElse(List[PttArticle]())
   }
 
@@ -89,27 +84,6 @@ object Parser {
         content = cleanedContent,
         push = pushData)
     }
-    /*
-    val mainContent: Element = parsePageUtils.accessPageWithCookies(articleLink, cookies).parse.getElementById("main-content")
-
-    // Extract article meta data
-    val metaTags = mainContent.getElementsByClass("article-meta-tag").asScala.map(elem => elem.text)
-    val metaValues = mainContent.getElementsByClass("article-meta-value").asScala.map(elem => elem.text)
-    val metaData = metaTags.zip(metaValues).toMap
-
-    // Extract push data
-    val pushData: List[PushContent] =
-      mainContent.getElementsByClass("push").asScala.map(elem => parseSinglePushContent(elem)).toList
-
-    // Extract article text
-    mainContent.children().remove()
-    val cleanedContent = mainContent.text
-
-    PttArticle(
-      articleId = articleId,
-      metaData = metaData,
-      content = cleanedContent,
-      push = pushData) */
   }
 
   def parseSinglePushContent(push: Element): PushContent = {
@@ -167,19 +141,6 @@ object ParsePageUtils {
             data.foldLeft[Connection](connection)(addDataToConnection).userAgent(userAgent).method(Method.POST).execute
         }
     }
-
-    /*
-    val connection = maybeConnection.get
-
-    val enrichedConnection: Connection = data match {
-      case Nil => connection
-      case _ => data.foldLeft[Connection](connection)(addDataToConnection)
-    }
-
-    val cnResponse = enrichedConnection.userAgent(userAgent)
-      .method(Method.POST)
-      .execute
-    Option(cnResponse) */
   }
 
   def accessAgeCheck(link: String, blackList: Set[String] = Set[String]()): Option[Connection.Response] = {

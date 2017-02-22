@@ -8,6 +8,8 @@ import org.jsoup.HttpStatusException
 
 /**
   * Created by tblee on 2/18/17.
+  * Supervisor actor manages the crawling process, assign pages to crawler, record broken pages and
+  * terminates the whole process when crawling tasks are done.
   */
 class Supervisor(system: ActorSystem, board: String) extends Actor with ActorLogging{
 
