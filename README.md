@@ -1,4 +1,4 @@
-# AkkaPttCrawler
+# AkkaPttCrawler (PTT 爬蟲)
 A PTT crawler build with Akka/Scala.
 
 Some of the actor structure is inspired by:
