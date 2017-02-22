@@ -1,7 +1,7 @@
 package me.tblee.akkapttcrawler
 
-import akka.actor.{Actor, ActorSystem, PoisonPill, Props}
-import me.tblee.akkapttcrawler.actors.{PageCrawler, Supervisor}
+import akka.actor.{ActorSystem, Props}
+import me.tblee.akkapttcrawler.actors.Supervisor
 import me.tblee.akkapttcrawler.utils.Messages._
 
 /**

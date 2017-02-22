@@ -1,6 +1,5 @@
 package me.tblee.akkapttcrawler.utils
 
-import com.sun.deploy.util.BlackList
 import org.jsoup.Connection.Method
 import org.jsoup.nodes.Element
 import org.jsoup.{Connection, Jsoup}
