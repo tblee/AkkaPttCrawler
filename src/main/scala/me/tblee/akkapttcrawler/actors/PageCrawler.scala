@@ -16,22 +16,26 @@ class PageCrawler(supervisor: ActorRef) extends Actor with ActorLogging{
 
   val pttPrefix = "https://www.ptt.cc/bbs/"
   val parser = Parser
+  var blackList: Set[String] = Set[String]()
 
   override def receive: Receive = {
     case StartCrawlingPage(board, page, fileWriter) =>
       val link = s"${pttPrefix}${board}/index${page.toString}.html"
-      val maybeArticles: Try[List[PttArticle]] = parser.parsePage(link)
+      val maybeArticles: Try[List[PttArticle]] = parser.parsePage(link, blackList)
       maybeArticles match {
         case Success(articles) =>
           fileWriter ! StartWriting(articles, board, page)
         case Failure(err) =>
           log.error(s"Got ${err.toString} when crawling page --${page} of board --${board}")
-          supervisor ! FailedCrawlingPage(board, page)
+          supervisor ! FailedCrawlingPage(board, page, err)
       }
       //fileWriter ! StartWriting(articles, board, page)
 
     case FinishedWriting(board, page) =>
       supervisor ! FinishedCrawlingPage(board, page)
+
+    case UpdateBlackList(badUrl) =>
+      blackList += badUrl
 
     case _ =>
   }

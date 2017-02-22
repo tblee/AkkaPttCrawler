@@ -14,8 +14,9 @@ object Messages {
 
   // Messages to and from PageCrawler
   case class StartCrawlingPage(board: String, page: Int, fileWriter: ActorRef)
-  case class FailedCrawlingPage(board: String, page: Int)
+  case class FailedCrawlingPage(board: String, page: Int, err: Throwable)
   case class FinishedCrawlingPage(board: String, page: Int)
+  case class UpdateBlackList(badURL: String)
 
   // Messages to and from FileWriter
   case class StartWriting(articles: List[PttArticle], board: String, page: Int)

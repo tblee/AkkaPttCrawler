@@ -25,13 +25,14 @@ class FileWriter(file: File) extends Actor with ActorLogging {
       if (firstWrite) {
         articles match {
           case head::tail =>
-            writer.write(head.asJson.noSpaces + "\n")
-            tail foreach { article => writer.write("," + article.asJson.noSpaces + "\n") }
+            writer.write(head.asJson.spaces4 + "\n")
+            tail foreach { article => writer.write("," + article.asJson.spaces4 + "\n") }
+            firstWrite = false
           case _ =>
         }
-        firstWrite = false
+        //firstWrite = false
       } else {
-        articles foreach { article => writer.write("," + article.asJson.noSpaces + "\n") }
+        articles foreach { article => writer.write("," + article.asJson.spaces4 + "\n") }
       }
       sender() ! FinishedWriting(board, page)
 

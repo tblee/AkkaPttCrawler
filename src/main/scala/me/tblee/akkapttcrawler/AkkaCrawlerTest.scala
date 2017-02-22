@@ -14,9 +14,11 @@ object AkkaCrawlerTest {
 
     val system = ActorSystem()
 
-    val board = "Gossiping"
+    val board = args(0)
+    val startPage = args(1).toInt
+    val endPage = args(2).toInt
 
     val supervisor = system.actorOf(Props(new Supervisor(system, board)))
-    supervisor ! StartCrawling(8810, 18809)
+    supervisor ! StartCrawling(startPage, endPage)
   }
 }

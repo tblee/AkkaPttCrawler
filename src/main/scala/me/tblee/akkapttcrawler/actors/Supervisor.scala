@@ -3,7 +3,8 @@ package me.tblee.akkapttcrawler.actors
 import java.io.File
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
-import me.tblee.akkapttcrawler.utils.Messages.{FailedCrawlingPage, FinishedCrawlingPage, StartCrawling, StartCrawlingPage}
+import me.tblee.akkapttcrawler.utils.Messages._
+import org.jsoup.HttpStatusException
 
 /**
   * Created by tblee on 2/18/17.
@@ -54,7 +55,14 @@ class Supervisor(system: ActorSystem, board: String) extends Actor with ActorLog
       else if (pagesCrawling.isEmpty) shutDown()
 
     // When a Page Crawler reports failure in crawling a page
-    case FailedCrawlingPage(_, page) =>
+    case FailedCrawlingPage(_, page, err) =>
+      // Handle error message, if some URL has HttpStatusException, add it to blacklist
+      err match {
+        case error: HttpStatusException =>
+          val badURL = error.getUrl
+          pageCrawlers foreach {pageCrawler => pageCrawler ! UpdateBlackList(badURL)}
+        case _ =>
+      }
       registerFailedPage(page)
       assignPageToCrawl(pagesToCrawl.head, sender())
 
